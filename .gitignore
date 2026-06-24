@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+.Rapp.history
+.Rproj.user/
+
+# Output files produced by running the scripts (regenerated on demand)
+toy_pred_out.csv
+toy_filter_out.csv
+toy_filtered_out.csv
+toy_weighted_out.csv
+*_out.csv
+
+# Editor / OS cruft
+*~
+Thumbs.db

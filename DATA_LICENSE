@@ -1,0 +1,21 @@
+Data License -- Creative Commons Attribution 4.0 International (CC-BY 4.0)
+
+The DATA files in this repository:
+    Data_S1_TRACE_model_coefficients.csv.gz
+    Data_S2_TRACE_partialR2_ALL_CpGs.csv.gz
+are licensed under the Creative Commons Attribution 4.0 International License
+(CC-BY 4.0).
+
+You are free to share and adapt these data for any purpose, including
+commercially, provided that you give appropriate credit (cite the associated
+publication; see CITATION.cff), indicate if changes were made, and do not imply
+endorsement by the authors.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
+Summary:           https://creativecommons.org/licenses/by/4.0/
+
+Attribution (to be completed):
+    [AUTHORS], "[TITLE]", [JOURNAL], [YEAR]. DOI: [DOI]
+
+NOTE: The CODE in this repository (R/ and examples/) is licensed separately
+under the MIT License; see LICENSE.

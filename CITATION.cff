@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use TRACE-CpG (code or data) in your work, please cite the article below."
+title: "TRACE-CpG: peripheral-to-brain DNA methylation surrogate sites and prediction"
+version: "1.0.0"
+date-released: "TBD"
+url: "TBD - GitHub repository URL"
+repository-code: "TBD - GitHub repository URL"
+license: MIT            # code; data are CC-BY-4.0 (see DATA_LICENSE)
+authors:
+  - family-names: "TBD"
+    given-names: "TBD"
+    affiliation: "TBD"
+    # add the full author list here
+preferred-citation:
+  type: article
+  title: "TBD - article title"
+  authors:
+    - family-names: "TBD"
+      given-names: "TBD"
+  journal: "Nature Genetics"
+  year: TBD
+  doi: "TBD"
+  url: "TBD"
