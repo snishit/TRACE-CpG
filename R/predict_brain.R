@@ -1,36 +1,32 @@
 #!/usr/bin/env Rscript
 ###############################################################################
-# predict_brain.R  --  TRACE-CpG mode B
+# predict_brain.R  --  TRACE-CpG
 #
-# Predict brain DNA methylation (beta values) from a peripheral tissue, using
-# the TRACE BESS coefficients in Data S1 and the fixed variance-rescaling
-# coefficient (Scale).
+# Estimate brain DNA methylation (beta values) from blood or buccal epithelium
+# at brain epigenome shared sites (BrESS), using the model coefficients and the
+# fixed variance-rescaling factor (Scale) in Data S2.
 #
-# Model (M-value scale), fit per CpG with brain ~ peripheral + age + sex + REs:
+# Model (M-value scale), fit per CpG on the IMAGE-CpG2 discovery data with
+#     brain_M ~ peripheral_M + Age + Sex + (1|PatientID) + (1|Region)
 #     pred = Coef_Intercept
 #          + Coef_Peripheral_M * peripheral_M
 #          + Coef_Age          * age
 #          + Coef_Sex          * sex            (sex: Male = 1, Female = 0)
 #
-# Variance rescaling (fixed from the discovery cohort):
+# Variance rescaling (factor fixed from the discovery cohort):
 #     corrected = rowMean(pred) + (pred - rowMean(pred)) * Scale
-#     (Scale = sqrt(var_target / var_pred_discovery); CpGs absent from the
-#      coefficient table are left uncorrected, i.e. Scale = 1.)
 #
 #   The rescaling spreads each CpG's predicted values around their mean ACROSS
-#   THE INPUT SAMPLES. The Scale factor is fixed (from the discovery cohort),
-#   but the centre is the mean of the samples you provide. Consequences:
+#   THE INPUT SAMPLES. Scale is fixed, but the centre is the mean of the samples
+#   you provide. Consequences:
 #     * This is a cohort-level correction: provide multiple samples (tens or
 #       more recommended) for a stable result.
 #     * Corrected absolute values depend slightly on the set of samples
-#       supplied, so the same individual may differ a little between, e.g., a
-#       10-sample run and a 100-sample run. The spread (relative ordering and
-#       variance) is unaffected; only the absolute level shifts, and it
-#       stabilises as the sample size grows.
-#     * With a SINGLE sample the correction is inactive (the value equals its
-#       own mean, so corrected == pred). Single-sample input is not recommended.
+#       supplied; the relative ordering and variance are unaffected, and the
+#       level stabilises as the sample size grows.
+#     * With a SINGLE sample the correction is inactive (corrected == pred).
 #
-# Output: predicted BRAIN beta values (corrected), one row per BESS CpG that is
+# Output: estimated BRAIN beta values (corrected), one row per BrESS that is
 #         present in the input beta matrix.
 #
 # Usage:
@@ -38,32 +34,30 @@
 #       --tissue Blood \
 #       --beta   peripheral_beta.csv \
 #       --pheno  phenotype.csv \
-#       --s1     Data_S1_TRACE_model_coefficients.csv.gz \
+#       --s2     Data_S2_TRACE_BrESS_models.csv.gz \
 #       --out    predicted_brain_beta.csv
 #
 # Inputs
 #   --beta   CSV: first column = CpG_ID, remaining columns = samples (beta in [0,1])
 #   --pheno  CSV: first column = sample ID (matching --beta column names),
-#                 plus columns 'Age' (numeric) and 'Sex'
+#                 plus columns 'Age' (numeric, years) and 'Sex'
 #                 ('M'/'F' or 'Male'/'Female', case-insensitive)
-#   --s1     TRACE Data S1 (confirmed BESS coefficients; .csv or .csv.gz)
-#   --tissue one of Blood | Buccal | Saliva  (selects the rows of S1)
+#   --s2     TRACE Data S2 (BrESS model parameters; .csv or .csv.gz)
+#   --tissue Blood | Buccal  (selects the rows of S2)
 #   --out    output CSV path
 #
 # Notes
 #   - Age is required; any missing Age stops the run.
-#   - The variance rescaling is a cohort-level correction centred on the mean of
-#     the input samples; use multiple samples (single-sample input leaves the
-#     correction inactive). See "Variance rescaling" above.
-#   - Each CpG is predicted independently. BESS CpGs absent from the input beta
+#   - Each CpG is predicted independently. BrESS absent from the input beta
 #     matrix are omitted from the output (they do not affect other CpGs).
-#   - Requires: data.table, lumi (Bioconductor).
+#   - Requires: data.table.
 ###############################################################################
 
-suppressPackageStartupMessages({
-  library(data.table)
-  library(lumi)
-})
+suppressPackageStartupMessages(library(data.table))
+
+## beta <-> M (same definitions as lumi::beta2m / lumi::m2beta)
+beta2m <- function(b) log2(b / (1 - b))
+m2beta <- function(m) 2^m / (2^m + 1)
 
 ## ---- minimal --key value argument parser ----------------------------------
 parse_args <- function(args) {
@@ -80,24 +74,23 @@ parse_args <- function(args) {
   out
 }
 a <- parse_args(commandArgs(trailingOnly = TRUE))
-req <- c("tissue", "beta", "pheno", "s1", "out")
+req <- c("tissue", "beta", "pheno", "s2", "out")
 miss <- setdiff(req, names(a))
 if (length(miss))
   stop("Missing required argument(s): ", paste0("--", miss, collapse = " "))
-if (!a$tissue %in% c("Blood", "Buccal", "Saliva"))
-  stop("--tissue must be Blood, Buccal, or Saliva (got: ", a$tissue, ")")
+if (!a$tissue %in% c("Blood", "Buccal"))
+  stop("--tissue must be Blood or Buccal (got: ", a$tissue, ")")
 
-## ---- 1. coefficients (Data S1), restricted to the chosen tissue -----------
-cat(sprintf("[S1] reading %s ; tissue = %s\n", a$s1, a$tissue))
-s1 <- fread(a$s1, showProgress = FALSE)
+## ---- 1. model parameters (Data S2), restricted to the chosen tissue -------
+cat(sprintf("[S2] reading %s ; tissue = %s\n", a$s2, a$tissue))
+s2 <- fread(a$s2, showProgress = FALSE)
 need <- c("CpG_ID", "Tissue", "Coef_Intercept", "Coef_Peripheral_M",
           "Coef_Age", "Coef_Sex", "Scale")
-miss <- setdiff(need, names(s1))
-if (length(miss)) stop("Data S1 is missing column(s): ", paste(miss, collapse = ", "))
-coef <- s1[Tissue == a$tissue, ..need]
-if (nrow(coef) == 0) stop("No rows in S1 for tissue ", a$tissue)
-coef[!is.finite(Scale), Scale := 1]               # uncorrected if Scale absent
-cat(sprintf("[S1] %d BESS CpGs for %s\n", nrow(coef), a$tissue))
+miss <- setdiff(need, names(s2))
+if (length(miss)) stop("Data S2 is missing column(s): ", paste(miss, collapse = ", "))
+coef <- s2[Tissue == a$tissue, ..need]
+if (nrow(coef) == 0) stop("No rows in S2 for tissue ", a$tissue)
+cat(sprintf("[S2] %d BrESS for %s\n", nrow(coef), a$tissue))
 
 ## ---- 2. peripheral beta -> M ----------------------------------------------
 cat(sprintf("[BETA] reading %s\n", a$beta))
@@ -108,8 +101,8 @@ if (any(bmat < 0, na.rm = TRUE) || any(bmat > 1, na.rm = TRUE))
   stop("Input --beta has values outside [0,1]; supply beta values, not M-values.")
 bmat[bmat >= 1] <- 1 - 1e-6
 bmat[bmat <= 0] <- 1e-6
-Mmat <- lumi::beta2m(bmat)
-rm(beta, bmat); gc(verbose = FALSE)
+Mmat <- beta2m(bmat)
+rm(beta, bmat); invisible(gc(verbose = FALSE))
 
 ## ---- 3. phenotype: align samples, build age/sex vectors -------------------
 cat(sprintf("[PHENO] reading %s\n", a$pheno))
@@ -138,10 +131,11 @@ if (any(is.na(sex_vec)))
        paste(unique(ph$Sex[is.na(sex_vec)]), collapse = ", "),
        " (use M/F or Male/Female).")
 
-## ---- 4. predict on M scale (BESS CpGs present in the input) ---------------
+## ---- 4. predict on M scale (BrESS present in the input) -------------------
 present <- coef$CpG_ID[coef$CpG_ID %in% rownames(Mmat)]
-cat(sprintf("[PRED] %d / %d BESS CpGs available in input; %d omitted (absent from input)\n",
+cat(sprintf("[PRED] %d / %d BrESS available in input; %d omitted (absent from input)\n",
             length(present), nrow(coef), nrow(coef) - length(present)))
+if (length(present) == 0) stop("None of the BrESS for ", a$tissue, " are in the input.")
 
 cf <- coef[match(present, CpG_ID)]
 Mp <- Mmat[present, , drop = FALSE]
@@ -156,8 +150,8 @@ rownames(pred) <- present; colnames(pred) <- common
 row_mean <- rowMeans(pred, na.rm = TRUE)
 corrected <- row_mean + (pred - row_mean) * cf$Scale
 
-## ---- 6. back to beta; output only the BESS CpGs present in the input -------
-beta_out <- lumi::m2beta(corrected)        # rows = present, cols = common
+## ---- 6. back to beta; output only the BrESS present in the input ---------
+beta_out <- m2beta(corrected)
 
 res <- data.table(CpG_ID = present)
 res <- cbind(res, as.data.table(beta_out))

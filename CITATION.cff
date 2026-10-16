@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 message: "If you use TRACE-CpG (code or data) in your work, please cite the article below."
-title: "TRACE-CpG: peripheral-to-brain DNA methylation surrogate sites and prediction"
+title: "TRACE-CpG: brain epigenome shared sites (BrESS) and peripheral-to-brain DNA methylation prediction"
 version: "1.0.0"
 date-released: "TBD"
-url: "TBD - GitHub repository URL"
-repository-code: "TBD - GitHub repository URL"
+url: "https://github.com/snishit/TRACE-CpG"
+repository-code: "https://github.com/snishit/TRACE-CpG"
 license: MIT            # code; data are CC-BY-4.0 (see DATA_LICENSE)
 authors:
   - family-names: "TBD"
@@ -17,7 +17,7 @@ preferred-citation:
   authors:
     - family-names: "TBD"
       given-names: "TBD"
-  journal: "Nature Genetics"
+  journal: "TBD"
   year: TBD
   doi: "TBD"
   url: "TBD"
