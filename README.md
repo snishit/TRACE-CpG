@@ -40,10 +40,12 @@ One row per CpG (wide format), 687,873 CpGs.
 | Column | Meaning |
 |--------|---------|
 | `CpG_ID` | Illumina CpG identifier |
-| `Blood_R2gain_DB8`, `Blood_R2gain_DB7`, `Blood_R2gain_DB6` | R²gain in the cycle tested on the named dataset (trained on the other two) |
-| `Blood_n_cycles_R2gain_gt0.2` | number of cycles with R²gain > 0.2 (0–3) |
-| `Blood_BrESS` | TRUE if R²gain > 0.2 in at least two cycles |
-| `Buccal_…` | same columns for buccal epithelium |
+| `Blood_R2gain_DB8`, `Blood_R2gain_DB7`, `Blood_R2gain_DB6` | R²gain for blood in the cycle tested on the named dataset (trained on the other two) |
+| `Blood_n_cycles_R2gain_gt0.2` | number of cycles with R²gain > 0.2 for blood (0–3) |
+| `Blood_BrESS` | TRUE if R²gain > 0.2 in at least two cycles for blood |
+| `Buccal_R2gain_DB8`, `Buccal_R2gain_DB7`, `Buccal_R2gain_DB6` | same as above, for buccal epithelium |
+| `Buccal_n_cycles_R2gain_gt0.2` | same as above, for buccal epithelium |
+| `Buccal_BrESS` | same as above, for buccal epithelium |
 | `Common_BrESS` | TRUE if the CpG is a BrESS in both blood and buccal epithelium |
 
 ### `Data_S2_TRACE_BrESS_models.csv.gz` — prediction models, BrESS only
