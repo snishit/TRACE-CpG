@@ -7,7 +7,7 @@
 # fixed variance-rescaling factor (Scale) in Data S2.
 #
 # Model (M-value scale), fit per CpG on the IMAGE-CpG2 discovery data with
-#     brain_M ~ peripheral_M + Age + Sex + (1|PatientID) + (1|Region)
+#     brain_M ~ peripheral_M + Age + Sex + (1|Donor) + (1|Region)
 #     pred = Coef_Intercept
 #          + Coef_Peripheral_M * peripheral_M
 #          + Coef_Age          * age

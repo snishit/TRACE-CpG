@@ -51,7 +51,7 @@ One row per CpG (wide format), 687,873 CpGs.
 ### `Data_S2_TRACE_BrESS_models.csv.gz` — prediction models, BrESS only
 One row per BrESS × tissue (long format); blood 121,167 rows, buccal 109,385 rows.
 Model, fit on the full IMAGE-CpG2 data (DB6–DB8) by maximum likelihood:
-`brain_M ~ peripheral_M + Age + Sex + (1|PatientID) + (1|Region)`.
+`brain_M ~ peripheral_M + Age + Sex + (1|Donor) + (1|Region)`.
 
 | Column | Meaning |
 |--------|---------|
@@ -63,7 +63,7 @@ Model, fit on the full IMAGE-CpG2 data (DB6–DB8) by maximum likelihood:
 | `Coef_Peripheral_M` | peripheral-M coefficient |
 | `Coef_Age` | age coefficient (years) |
 | `Coef_Sex` | sex coefficient; **Sex coded Male = 1, Female = 0** |
-| `Var_PatientID`, `Var_Region`, `Var_Residual` | random-effect variance components |
+| `Var_Donor`, `Var_Region`, `Var_Residual` | variance components for donor and brain region (random effects) and the residual variance |
 | `Scale` | fixed variance-rescaling factor, √(σ²_brain / σ²_pBrain) from the discovery data |
 
 ---
