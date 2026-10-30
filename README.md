@@ -182,4 +182,8 @@ install.packages("data.table")
 
 ## Citation
 
-See [`CITATION.cff`](CITATION.cff). (Article and DOI to be added on publication.)
+If you use TRACE-CpG (code or data), please cite:
+
+Nishitani S, et al. A genome-wide catalog of sites where peripheral DNA methylation reflects the brain. *bioRxiv* (2026). doi: [10.64898/2026.10.23.761276](https://doi.org/10.64898/2026.10.23.761276)
+
+A citation file is provided in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this repository" button uses it.

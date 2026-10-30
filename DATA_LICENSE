@@ -14,8 +14,9 @@ endorsement by the authors.
 Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
 Summary:           https://creativecommons.org/licenses/by/4.0/
 
-Attribution (to be completed):
-    [AUTHORS], "[TITLE]", [JOURNAL], [YEAR]. DOI: [DOI]
+Attribution:
+    Nishitani S, et al. "A genome-wide catalog of sites where peripheral DNA methylation reflects the brain". bioRxiv (2026).
+    DOI: https://doi.org/10.64898/2026.10.23.761276
 
 NOTE: The CODE in this repository (R/) is licensed separately
 under the MIT License; see LICENSE.
